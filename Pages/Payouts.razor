@@ -1,0 +1,154 @@
+﻿@page "/payouts"
+@inject System.Net.Http.HttpClient Http
+@attribute [StreamRendering]
+
+<style>
+	td{
+		margin: 0 auto;
+	}
+</style>
+<PageTitle>Payouts</PageTitle>
+
+<h1>Payouts</h1>
+
+<p>This component displays earnings from each QDB.</p>
+
+@if (tdata == null)
+{
+	<p><em>Loading...</em></p>
+	//<p>@tdata.Data.Tournaments.Nodes.Select(e => e.Name)</p>
+}
+else
+{
+	@foreach (var eventList in tdata.Data.Tournaments.Nodes.Select(e => e.Events))
+	{
+		foreach (var myEvent in eventList)
+		{
+			if (myEvent.Name == "QDB Dinner Headcount") continue;
+			payoutList = PayoutCalculator.CalcPayout(myEvent.NumEntrants).ToList();
+			<h3>@myEvent.Name</h3>
+			<h4>@($"Number of entrants: {myEvent.NumEntrants}")</h4>
+			<p>@($"Prize Pool: ${payoutList.Sum()}")</p>
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Placement</th>
+						<th>Name</th>
+						<th>Earnings</th>
+					</tr>
+
+					@foreach (var standingsItem in myEvent.Standings.Nodes)
+					{
+						@if (standingsItem.Placement <= payoutList.Count)
+						{
+							<tr>
+								<td>@standingsItem.Placement</td>
+								<td>@standingsItem.Player.gamerTag</td>
+								<td>$@payoutList.ElementAt(standingsItem.Placement - 1)</td>
+							</tr>
+						}
+
+					}
+				</thead>
+			</table>
+			<br />
+		}
+	}}
+@code {
+
+	private static TournamentResponse tdata;
+	private List<double> payoutList;
+	protected override async Task OnInitializedAsync()
+	{
+
+		// Simulate asynchronous loading to demonstrate streaming rendering
+		await Task.Delay(500);
+		await callAPI();
+	}
+
+
+	static async Task callAPI()
+	{
+		string query = @"
+        query TournamentEventPlacements($name: String!, $perPageT: Int, $perPageS: Int, $page: Int) {
+          tournaments(query: {perPage: $perPageT, filter: {name: $name}}) {
+            nodes {
+              name
+              events {
+                name
+                numEntrants
+                standings(query: {perPage: $perPageS, page: $page}) {
+                  nodes {
+                    placement
+                    player {
+                      id
+                      gamerTag
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }";
+
+		var variables = new
+		{
+			name = "Quickdraw",
+			perPageS = 8,
+			perPageT = 4,
+			page = 1
+		};
+
+		var requestBody = new
+		{
+			query,
+			variables
+		};
+
+		string jsonRequestBody = JsonConvert.SerializeObject(requestBody);
+		//string myKey = File.ReadLines("sample-data/myKey.txt").First();
+		var myClient = new HttpClient();
+		myClient.DefaultRequestHeaders.Add("Accept", "application/json");
+		myClient.DefaultRequestHeaders.Add("Authorization", "Bearer bf01876582bb578d64a02e1202b28f26");
+
+		var content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
+
+		HttpResponseMessage response = await myClient.PostAsync("https://api.start.gg/gql/alpha", content);
+
+		if (response.IsSuccessStatusCode)
+		{
+			string responseContent = await response.Content.ReadAsStringAsync();
+			tdata = JsonConvert.DeserializeObject<TournamentResponse>(responseContent);
+			/*if (tournamentResponse?.Data?.Tournaments != null)
+			{
+				foreach (var tournament in tournamentResponse.Data.Tournaments.Nodes)
+				{
+					Console.WriteLine($"Tournament Name: {tournament.Name}");
+					foreach (var eventItem in tournament.Events)
+					{
+						if (eventItem.Name == "QDB Dinner Headcount") continue;
+						Console.WriteLine($"  Event Name: {eventItem.Name}");
+						Console.WriteLine($"  Number of Entrants: {eventItem.NumEntrants}");
+						var payoutList = CalcPayout(eventItem.NumEntrants);
+						Console.WriteLine($"  Total prize pool: ${payoutList.Sum()}");
+						foreach (var standingItem in eventItem.Standings.Nodes)
+						{
+							if (standingItem.Placement <= payoutList.Count)
+							{
+								Console.WriteLine($"   {IntToPodiumName(standingItem.Placement)} place: {standingItem.Player.gamerTag} won ${payoutList.ElementAt(standingItem.Placement - 1)} ");
+								}
+							}
+						Console.WriteLine();
+						}
+					Console.WriteLine();
+					}
+				}*/
+		}
+		else
+		{
+			Console.WriteLine("Error: " + response.ReasonPhrase);
+			string errorContent = await response.Content.ReadAsStringAsync();
+			Console.WriteLine($"Response Content: {errorContent}");
+		}
+	}
+}
