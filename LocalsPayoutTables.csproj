@@ -15,7 +15,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.10" PrivateAssets="all" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="PublishSPAforGitHubPages.Build" Version="3.0.0" />
-    <GHPages>true</GHPages>
   </ItemGroup>
 
 </Project>
