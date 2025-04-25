@@ -8,7 +8,7 @@
             prizePool += (numAttendees * 5);
             List<double> payouts = numAttendees switch
             {
-                < 5 => new List<double> { 0 },
+                < 5 => new List<double> { .75, .25 },                                    // Top 2 Payout
                 >= 5 and < 20 => new List<double> { .50, .30, .20 },                     // Top 3 Payout
                 >= 20 and < 30 => new List<double> { .50, .30, .15, .10 },               // Top 4 Payout
                 >= 30 and < 40 => new List<double> { .45, .20, .15, .10, .05, .05 },     // Top 6 Payout

@@ -36,18 +36,14 @@ else
 						<th>Name</th>
 						<th>Earnings</th>
 					</tr>
-
-					@foreach (var standingsItem in myEvent.Standings.Nodes)
+					@foreach (var payoutItem in payoutList)
 					{
-						@if (standingsItem.Placement <= payoutList.Count)
-						{
-							<tr>
-								<td>@standingsItem.Placement</td>
-								<td>@standingsItem.Player.gamerTag</td>
-								<td>$@payoutList.ElementAt(standingsItem.Placement - 1)</td>
-							</tr>
-						}
-
+						var standingsItem = myEvent.Standings.Nodes.ElementAt(payoutList.IndexOf(payoutItem));
+						<tr>
+							<td>@standingsItem.Placement</td>
+							<td>@standingsItem.Player.gamerTag</td>
+							<td>$@payoutItem</td>
+						</tr>
 					}
 				</thead>
 			</table>
