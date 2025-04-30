@@ -62,15 +62,53 @@
 		border: 1px solid #ddd;
 		padding: 8px;
 		text-align: center;
+		word-wrap: anywhere;
 	}
-
+	
+	.form-control{
+		width: 10ch;
+	}
 </style>
 <PageTitle>Payouts</PageTitle>
 
 <h1>Payouts</h1>
 
 <p>This component displays earnings from each QDB.</p>
+<h3>
+	<div class="mb-2 d-inline-flex align-items-center">
+		<label for="aInput" class="me-2">Calcuate Payout for a Tournament with </label>
+		<InputNumber @bind-Value="A" id="aInput" class="form-control" Placeholder="##" Min="1" Max="9999" /> 
+		<span class="ms-2">Entrants.</span>
+	</div>
+</h3>
 
+@{
+	if(A != null){
+	var myList = CalcPayout((int)A); int myCounter = 0;
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Placement</th>
+				<th>Earnings</th>
+			</tr>
+		</thead>
+		@foreach (var listItem in myList)
+		{
+			<tbody>
+				<tr>
+					<td>@IntToPodiumName(++myCounter)</td>
+					<td>$@System.Math.Round(listItem, 2)</td>
+				</tr>
+			</tbody>
+		}
+		<tr>
+			<td>Total Prize Pool</td>
+			<td>$@myList.Sum()</td>
+		</tr>
+	</table>
+		<br />
+	}
+}
 @if (tdata == null)
 {
 	<p><em>Loading...</em></p>
@@ -120,6 +158,7 @@ else
 
 	private static TournamentResponse tdata;
 	private List<double> payoutList;
+	private int? A { get; set; } = null;
 	protected override async Task OnInitializedAsync()
 	{
 
