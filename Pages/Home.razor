@@ -121,7 +121,7 @@ else
 		<div class="table-grid">
 		@foreach (var myEvent in eventList)
 		{
-			if (myEvent.Name == "QDB Dinner Headcount") continue;
+			if (myEvent.Name == "QDB Dinner Headcount" || myEvent.Name == "Quickdraw Brawl 46 GBVSR" || myEvent.Name == "Quickdraw Brawl 46 UNI2" || myEvent.Name == "Quickdraw Brawl 46 GGXrdR2" || myEvent.Name == "Quickdraw Brawl 46 BBCF") continue;
 
 			<div class="table-container">
 				@{payoutList = PayoutCalculator.CalcPayout(myEvent.NumEntrants).ToList();}
@@ -196,7 +196,7 @@ else
 		{
 			name = "Quickdraw",
 			perPageS = 8,
-			perPageT = 4,
+			perPageT = 5,
 			page = 1
 		};
 
