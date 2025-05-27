@@ -37,9 +37,10 @@
 	/* } */
 	.table-grid{
 		display: grid;
-		grid-template-columns: repeat(2, 1fr); /* 2 tables per row */
+		grid-template-columns: repeat(4, 1fr); /* 2 tables per row */
 		gap: 20px; /* Space between tables */
 		margin-bottom: 20px;
+		overflow: auto;
 	}
 
 	.table-container{
@@ -122,34 +123,40 @@ else
 		@foreach (var myEvent in eventList)
 		{
 			if (myEvent.Name == "QDB Dinner Headcount") continue;
+			payoutList = CalcPayout(myEvent.NumEntrants).ToList();
+			<Card Class ="mb-4" Style="width:auto; min-width: 25rem;" TextAlignment="Alignment.Center" >
+				<CardBody>
+					<CardTitle>@myEvent.Name</CardTitle>
+						<CardSubTitle Class="mb-2 text-muted">@($"{myEvent.NumEntrants} Entrants")</CardSubTitle>
+						<CardSubTitle Class="mb-2 text-muted">@($"${CalcPayout(myEvent.NumEntrants).ToList().Sum()} Pot")</CardSubTitle>
+						<div style="align-content: space-evenly">
+							<table class="table">
+								<thead>
+									<tr>
+										<th>Placement</th>
+										<th>Name</th>
+										<th>Earnings</th>
+									</tr>
+								</thead>
+						<tbody>
+							@for(int i = 0; i < payoutList.Count && i < myEvent.Standings.Nodes.Count; i++)
+							{
 
-			<div class="table-container">
-				@{payoutList = PayoutCalculator.CalcPayout(myEvent.NumEntrants).ToList();}
-				<h3>@myEvent.Name</h3>
-				<h4>@($"Number of entrants: {myEvent.NumEntrants}")</h4>
-				<p>@($"Prize Pool: ${payoutList.Sum()}")</p>
-				<table class="table">
-					<thead>
-						<tr>
-							<th>Placement</th>
-							<th>Name</th>
-							<th>Earnings</th>
-						</tr>
-					</thead>
-					<tbody>
-						@for (int i = 0; i < payoutList.Count && i < myEvent.Standings.Nodes.Count; i++)
-						{
-							var payoutItem = payoutList.ElementAt(i);
-							var standingItem = myEvent.Standings.Nodes.ElementAt(i);
-							<tr>
-								<td>@IntToPodiumName(standingItem.Placement)</td>
-								<td>@standingItem.Player.gamerTag</td>
-								<td>$@payoutItem</td>
-							</tr>
-						}
-					</tbody>
-				</table>
-			</div>
+								payoutList = CalcPayout(myEvent.NumEntrants).ToList();
+								var payoutItem = payoutList.ElementAt(i);
+								var standingItem = myEvent.Standings.Nodes.ElementAt(i);
+								//<li class="list-group-item">@($"{IntToPodiumName(standingItem.Placement)} {standingItem.Player.gamerTag} ${String.Format("{0:0.00}",payoutItem)}")</li>
+								<tr>
+									<td>@IntToPodiumName(standingItem.Placement)</td>
+									<td>@standingItem.Player.gamerTag</td>
+									<td>$@(String.Format("{0:0.00}", payoutItem))</td>
+								</tr>
+								}
+						</tbody>
+						</table>
+						</div>
+					</CardBody>
+			</Card>
 		}
 		</div>
 	}
