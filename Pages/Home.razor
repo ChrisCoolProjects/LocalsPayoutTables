@@ -122,9 +122,9 @@ else
 		<div class="table-grid">
 		@foreach (var myEvent in eventList)
 		{
-			if (myEvent.Name == "QDB Dinner Headcount") continue;
+			if (myEvent.Name == "QDB Dinner Headcount" || myEvent.NumEntrants == 0) continue;
 			payoutList = CalcPayout(myEvent.NumEntrants).ToList();
-			<Card Class ="mb-4" Style="width:auto; min-width: 25rem;" TextAlignment="Alignment.Center" >
+			<Card Class ="mb-4" Style="width:auto; min-width: 27.5rem; box-shadow: 0px 2.5px 2.5px 3.5px rgba(200, 200, 200, 0.35)" TextAlignment="Alignment.Center" >
 				<CardBody>
 					<CardTitle>@myEvent.Name</CardTitle>
 						<CardSubTitle Class="mb-2 text-muted">@($"{myEvent.NumEntrants} Entrants")</CardSubTitle>
@@ -203,7 +203,7 @@ else
 		{
 			name = "Quickdraw",
 			perPageS = 8,
-			perPageT = 5,
+			perPageT = 16,
 			page = 1
 		};
 
