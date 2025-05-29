@@ -10,5 +10,6 @@ namespace DLLTesting.StartGGLibrary
     {
         public string Name { get; set; }
         public int Id { get; set; }
+        public double Earnings { get; set; } = 0;
     }
 }

@@ -1,0 +1,56 @@
+﻿@page "/leaderboard"
+@inject NavigationState NavState
+@inject Blazored.SessionStorage.ISessionStorageService SessionStorage
+
+<style>
+    td{
+        font-size: 18px;
+    }
+</style>
+<PageTitle>Leaderboard</PageTitle>
+
+<h1>Leaderboard</h1>
+<p>If you've won money from <a href="https://www.start.gg/qdb">Quickdraw Brawl</a> in the past 16 months, your name and how much you've won will show up here!</p>
+@if(NavState.LeaderboardData == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+<Grid TItem="Entrant"
+    Class="table table-hover table-bordered table-striped"
+    Data="NavState.LeaderboardData"
+    AllowPaging="true"
+    PageSize="10"
+    PageSizeSelectorVisible="true"
+    PageSizeSelectorItems="@(new int[] {10, 15, 20, 25, 30, 50, 60})"
+    Responsive="true"
+    AllowSorting="true"
+    Style="font-size: medium"
+>
+    <GridColumns>
+            <GridColumn TItem="Entrant" HeaderText="Placing" HeaderTextAlignment="Alignment.Center">
+                @(NavState.LeaderboardData.IndexOf(context)+1)
+            </GridColumn>
+        <GridColumn TItem="Entrant" HeaderText="Name" PropertyName="Name" HeaderTextAlignment="Alignment.Center" SortKeySelector="Entrant => Entrant.Name" StringComparison="StringComparison.OrdinalIgnoreCase">
+                @context.Name
+            </GridColumn>
+        <GridColumn TItem="Entrant" HeaderText="Winnings" PropertyName="Earnings" HeaderTextAlignment="Alignment.Center" SortKeySelector="Entrant => Entrant.Earnings">
+                @context.Earnings.ToString("C", new System.Globalization.CultureInfo("en-US"))
+            </GridColumn>
+    </GridColumns>
+</Grid>
+}
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(500);
+        var result = await SessionStorage.GetItemAsync<List<Entrant>>("LeaderboardData");
+        NavState.LeaderboardData = result;// != null ? result : null;
+    }
+    private int currentCount = 0;
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+}
