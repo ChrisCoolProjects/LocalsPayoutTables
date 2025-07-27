@@ -10,7 +10,7 @@
 <PageTitle>Leaderboard</PageTitle>
 
 <h1>Leaderboard</h1>
-<p>If you've won money from <a href="https://www.start.gg/qdb">Quickdraw Brawl</a> in the past 16 months, your name and how much you've won will show up here!</p>
+<p>If you've won money from any of the past 12 <a href="https://www.start.gg/qdb">Quickdraw Brawl</a> events, your name and how much you've won will show up here!</p>
 @if(NavState.LeaderboardData == null)
 {
     <p><em>Loading...</em></p>
@@ -18,7 +18,7 @@
 else
 {
 <Grid TItem="Entrant"
-    Class="table table-hover table-bordered table-striped"
+    Class="table-hover table-bordered table-striped table"
     Data="NavState.LeaderboardData"
     AllowPaging="true"
     PageSize="10"
