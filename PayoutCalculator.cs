@@ -10,7 +10,7 @@
             {
                 < 5 => new List<double> { .75, .25 },                                    // Top 2 Payout
                 >= 5 and < 20 => new List<double> { .50, .30, .20 },                     // Top 3 Payout
-                >= 20 and < 30 => new List<double> { .50, .30, .15, .10 },               // Top 4 Payout
+                >= 20 and < 30 => new List<double> { .50, .25, .15, .10 },               // Top 4 Payout
                 >= 30 and < 40 => new List<double> { .45, .20, .15, .10, .05, .05 },     // Top 6 Payout
                 >= 40 => new List<double> { .42, .19, .14, .09, .05, .05, .03, .03 },    // Top 8 Payout
             };
