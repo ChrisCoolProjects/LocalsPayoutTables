@@ -1,6 +1,5 @@
 ﻿@page "/leaderboard"
-@inject NavigationState NavState
-@inject Blazored.SessionStorage.ISessionStorageService SessionStorage
+@inject TournamentDataService TournamentData
 
 <style>
     td{
@@ -11,7 +10,11 @@
 
 <h1>Leaderboard</h1>
 <p>If you've won money from any of the past 12 <a href="https://www.start.gg/qdb">Quickdraw Brawl</a> events, your name and how much you've won will show up here!</p>
-@if(NavState.LeaderboardData == null)
+@if (loadError != null)
+{
+    <p class="text-danger">@loadError</p>
+}
+else if (leaderboard == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -19,7 +22,7 @@ else
 {
 <Grid TItem="Entrant"
     Class="table-hover table-bordered table-striped table"
-    Data="NavState.LeaderboardData"
+    Data="leaderboard"
     AllowPaging="true"
     PageSize="10"
     PageSizeSelectorVisible="true"
@@ -30,7 +33,7 @@ else
 >
     <GridColumns>
             <GridColumn TItem="Entrant" HeaderText="Placing" HeaderTextAlignment="Alignment.Center">
-                @(NavState.LeaderboardData.IndexOf(context)+1)
+                @(leaderboard.IndexOf(context)+1)
             </GridColumn>
         <GridColumn TItem="Entrant" HeaderText="Name" PropertyName="Name" HeaderTextAlignment="Alignment.Center" SortKeySelector="Entrant => Entrant.Name" StringComparison="StringComparison.OrdinalIgnoreCase">
                 @context.Name
@@ -42,15 +45,20 @@ else
 </Grid>
 }
 @code {
+    private List<Entrant>? leaderboard;
+    private string? loadError;
+
     protected override async Task OnInitializedAsync()
     {
-        await Task.Delay(500);
-        var result = await SessionStorage.GetItemAsync<List<Entrant>>("LeaderboardData");
-        NavState.LeaderboardData = result;// != null ? result : null;
-    }
-    private int currentCount = 0;
-    private void IncrementCount()
-    {
-        currentCount++;
+        // Builds from the same shared data as the Home page, so this also works on a direct visit or refresh.
+        try
+        {
+            leaderboard = await TournamentData.GetLeaderboardAsync();
+        }
+        catch (Exception ex)
+        {
+            loadError = "Couldn't load results from start.gg right now. Try refreshing in a minute.";
+            Console.Error.WriteLine(ex);
+        }
     }
 }

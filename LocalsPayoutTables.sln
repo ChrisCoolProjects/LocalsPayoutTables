@@ -5,6 +5,8 @@ VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LocalsPayoutTables", "LocalsPayoutTables.csproj", "{65DB96A2-1979-49D0-8E50-05142FEF68BF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api", "Api\Api.csproj", "{0C7C750A-7BA1-4350-9DEE-36B70D1BFF9F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{65DB96A2-1979-49D0-8E50-05142FEF68BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65DB96A2-1979-49D0-8E50-05142FEF68BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65DB96A2-1979-49D0-8E50-05142FEF68BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C7C750A-7BA1-4350-9DEE-36B70D1BFF9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C7C750A-7BA1-4350-9DEE-36B70D1BFF9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C7C750A-7BA1-4350-9DEE-36B70D1BFF9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C7C750A-7BA1-4350-9DEE-36B70D1BFF9F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

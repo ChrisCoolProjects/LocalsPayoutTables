@@ -396,3 +396,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Azure Functions local settings (holds the start.gg token for local runs)
+local.settings.json

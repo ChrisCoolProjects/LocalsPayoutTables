@@ -7,12 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="wwwroot\sample-data\myKey.txt" />
+    <!-- The Azure Functions proxy in Api/ is its own project; keep its files out of the Blazor app. -->
+    <Compile Remove="Api\**" />
+    <Content Remove="Api\**" />
+    <EmbeddedResource Remove="Api\**" />
+    <None Remove="Api\**" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Blazor.Bootstrap" Version="3.3.1" />
-    <PackageReference Include="Blazored.SessionStorage" Version="2.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.10" PrivateAssets="all" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

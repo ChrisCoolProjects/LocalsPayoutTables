@@ -1,7 +1,25 @@
-﻿namespace DLLTesting
+﻿using System.Text.RegularExpressions;
+using DLLTesting.StartGGLibrary;
+
+namespace DLLTesting
 {
     internal static class PayoutCalculator
     {
+        // The games we run every week: BBCF, UNI (UNI2/UNICLR/...), Xrd (GGXrdR2), Granblue (GBVSR), P4AU.
+        // Matched as whole tags so e.g. "Universe" or "community" don't count as UNI.
+        private static readonly Regex MainGameTag = new(
+            @"\b(BBCF|UNI(\d|CLR|ST|EL)?\b|(GG)?Xrd|GBVS|Granblue|P4AU)",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        // Events that mention a main game but aren't its bracket (e.g. 'QB51 UNI2 "2v2 Main Swap" Headcount').
+        private static readonly string[] SideEventWords = { "headcount", "2v2", "side bracket" };
+
+        /// <summary>True for a regular weekly bracket; false for dinner headcounts, side brackets and other extras.</summary>
+        public static bool IsMainEvent(Event e) =>
+            e.NumEntrants > 0
+            && MainGameTag.IsMatch(e.Name)
+            && !SideEventWords.Any(w => e.Name.Contains(w, StringComparison.OrdinalIgnoreCase));
+
         public static List<double> CalcPayout(int numAttendees)
         {
             double prizePool = numAttendees >= 11 ? 50 : 0;

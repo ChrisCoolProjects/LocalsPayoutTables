@@ -1,8 +1,5 @@
 ﻿@page "/"
-@inject NavigationManager NavManager
-@inject NavigationState NavState
-@inject System.Net.Http.HttpClient Http
-@inject Blazored.SessionStorage.ISessionStorageService SessionStorage
+@inject TournamentDataService TournamentData
 @attribute [StreamRendering]
 
 
@@ -113,21 +110,25 @@
 		<br />
 	}
 }
-@if (tdata == null)
+@if (loadError != null)
+{
+	<p class="text-danger">@loadError</p>
+}
+else if (tdata == null)
 {
 	<p><em>Loading...</em></p>
 	//<p>@tdata.Data.Tournaments.Nodes.Select(e => e.Name)</p>
 }
 else
 {
-	<p>Click <a href="/leaderboard" @onclick="OnButtonClick">here</a> to see a leaderboard for all earnings.</p>
+	<p>Click <a href="leaderboard">here</a> to see a leaderboard for all earnings.</p>
 	@foreach(var tournament in tdata.Data.Tournaments.Nodes)
 		{
 			<div class="table-grid">
 			@foreach (var myEvent in tournament.Events)
 			{
 							firstAccordion = false;
-				if (myEvent.Name == "QDB Dinner Headcount" || myEvent.NumEntrants == 0 || myEvent.Name.Length > 30) continue;
+				if (!IsMainEvent(myEvent)) continue;
 				payoutList = CalcPayout(myEvent.NumEntrants).ToList();
 				<Card Class ="mb-4" Style="width:auto; min-width: 27.5rem; box-shadow: 0px 2.5px 2.5px 3.5px rgba(200, 200, 200, 0.35)" TextAlignment="Alignment.Center" >
 					<CardBody>
@@ -153,7 +154,7 @@ else
 									//<li class="list-group-item">@($"{IntToPodiumName(standingItem.Placement)} {standingItem.Player.gamerTag} ${String.Format("{0:0.00}",payoutItem)}")</li>
 									<tr>
 										<td>@IntToPodiumName(standingItem.Placement)</td>
-										<td>@standingItem.Player.gamerTag</td>
+										<td>@(standingItem.Player?.gamerTag ?? "Unknown")</td>
 										<td>$@(String.Format("{0:0.00}", payoutItem))</td>
 									</tr>
 									}
@@ -169,132 +170,23 @@ else
 	}
 @code {
 
-	private static TournamentResponse tdata;
-	private List<double> payoutList;
+	private TournamentResponse? tdata;
+	private string? loadError;
+	private List<double> payoutList = new();
 	private int? A { get; set; } = null;
 	bool firstAccordion = true;
+
 	protected override async Task OnInitializedAsync()
 	{
-
-		// Simulate asynchronous loading to demonstrate streaming rendering
-		await Task.Delay(500);
-		await callAPI();
-	}
-	private async void OnButtonClick()
-	{
-		var leaderboardDataHolder = tdata.Data.Tournaments.Nodes.SelectMany(e => e.Events);
-		List<Entrant> myLeaderboard = new List<Entrant>();
-		foreach(var eventItem in leaderboardDataHolder)
+		// Awaiting the shared service is all that's needed: the page shows "Loading..." until this completes.
+		try
 		{
-			if (!eventItem.Name.StartsWith("Quickdraw Brawl ") || eventItem.NumEntrants < 4) continue;
-			payoutList = CalcPayout(eventItem.NumEntrants);
-			for (int i = 0; i < payoutList.Count && i < eventItem.Standings.Nodes.Count; i++)
-			{
-				var payoutItem = payoutList.ElementAt(i);
-				var standingItem = eventItem.Standings.Nodes.ElementAt(i);
-				//Console.Write($"   {IntToPodiumName(standingItem.Placement)} place: {standingItem.Player.gamerTag} won ${payoutList.ElementAt(standingItem.Placement - 1)} ");
-				var currentPlayer = myLeaderboard.FirstOrDefault(x => x.Id == standingItem.Player.Id);
-				if (currentPlayer == null)
-				{
-					currentPlayer = new Entrant
-						{
-							Id = standingItem.Player.Id,
-							Name = standingItem.Player.gamerTag
-						};
-					myLeaderboard.Add(currentPlayer);
-					//Console.WriteLine(" (Added to leaderboard)");
-				}
-				else { Console.WriteLine(); }
-				myLeaderboard.FirstOrDefault(x => x.Id == currentPlayer.Id).Earnings += payoutItem;
-			}
+			tdata = await TournamentData.GetTournamentsAsync();
 		}
-		NavState.LeaderboardData = myLeaderboard.OrderByDescending(x => x.Earnings).ToList();
-		await SessionStorage.SetItemAsync("LeaderboardData", myLeaderboard.OrderByDescending(x => x.Earnings).ToList());
-		NavManager.NavigateTo("/leaderboard");
-	}
-
-	static async Task callAPI()
-	{
-		string query = @"
-        query TournamentEventPlacements($name: String!, $perPageT: Int, $perPageS: Int, $page: Int) {
-          tournaments(query: {perPage: $perPageT, filter: {name: $name}}) {
-            nodes {
-              name
-              events {
-                name
-                numEntrants
-                standings(query: {perPage: $perPageS, page: $page}) {
-                  nodes {
-                    placement
-                    player {
-                      id
-                      gamerTag
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }";
-
-		var variables = new
+		catch (Exception ex)
 		{
-			name = "Quickdraw",
-			perPageS = 8,
-			perPageT = 13,
-			page = 1
-		};
-
-		var requestBody = new
-		{
-			query,
-			variables
-		};
-
-		string jsonRequestBody = JsonConvert.SerializeObject(requestBody);
-		//string myKey = File.ReadLines("sample-data/myKey.txt").First();
-		var myClient = new HttpClient();
-		myClient.DefaultRequestHeaders.Add("Accept", "application/json");
-		myClient.DefaultRequestHeaders.Add("Authorization", "Bearer 7b1486294745b60d7a4fbf90531aa815");
-
-		var content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
-
-		HttpResponseMessage response = await myClient.PostAsync("https://api.start.gg/gql/alpha", content);
-
-		if (response.IsSuccessStatusCode)
-		{
-			string responseContent = await response.Content.ReadAsStringAsync();
-			tdata = JsonConvert.DeserializeObject<TournamentResponse>(responseContent);
-			/*if (tournamentResponse?.Data?.Tournaments != null)
-			{
-				foreach (var tournament in tournamentResponse.Data.Tournaments.Nodes)
-				{
-					Console.WriteLine($"Tournament Name: {tournament.Name}");
-					foreach (var eventItem in tournament.Events)
-					{
-						if (eventItem.Name == "QDB Dinner Headcount") continue;
-						Console.WriteLine($"  Event Name: {eventItem.Name}");
-						Console.WriteLine($"  Number of Entrants: {eventItem.NumEntrants}");
-						var payoutList = CalcPayout(eventItem.NumEntrants);
-						Console.WriteLine($"  Total prize pool: ${payoutList.Sum()}");
-						foreach (var standingItem in eventItem.Standings.Nodes)
-						{
-							if (standingItem.Placement <= payoutList.Count)
-							{
-								Console.WriteLine($"   {IntToPodiumName(standingItem.Placement)} place: {standingItem.Player.gamerTag} won ${payoutList.ElementAt(standingItem.Placement - 1)} ");
-								}
-							}
-						Console.WriteLine();
-						}
-					Console.WriteLine();
-					}
-				}*/
-		}
-		else
-		{
-			Console.WriteLine("Error: " + response.ReasonPhrase);
-			string errorContent = await response.Content.ReadAsStringAsync();
-			Console.WriteLine($"Response Content: {errorContent}");
+			loadError = "Couldn't load results from start.gg right now. Try refreshing in a minute.";
+			Console.Error.WriteLine(ex);
 		}
 	}
 }
